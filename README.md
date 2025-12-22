@@ -1,11 +1,7 @@
 ## PROYECTO: PRUEBAS AUTOMATIZADAS API PETSTORE
 
----
-
-## DESCRIPCIÓN
 Proyecto de automatización de pruebas API para PetStore utilizando Karate Framework.
-Incluye pruebas CRUD (Create, Read, Update, Delete) completas y casos de prueba 
-negativos con generación automática de reportes en formato HTML.
+Incluye pruebas CRUD (Create, Read, Update, Delete) completas y casos de prueba negativos con generación automática de reportes en formato HTML.
 
 ---
 
