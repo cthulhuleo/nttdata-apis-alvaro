@@ -76,8 +76,8 @@ Ver archivo build.gradle para la lista completa de dependencias.
 ---
 
 ## AUTOR
-Alvaro
-Proyecto para NTT Data - Automatización de APIs
+Alvaro.
+Proyecto Automatización de APIs.
 
 ---
 
