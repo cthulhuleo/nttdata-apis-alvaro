@@ -25,7 +25,7 @@ Feature: Pruebas de API para PetStore - Gestión Completa de Mascotas
       "tags": [
         {
           "id": 1,
-          "name": "juguetón"
+          "name": "jugueton"
         },
         {
           "id": 2,
@@ -73,7 +73,7 @@ Feature: Pruebas de API para PetStore - Gestión Completa de Mascotas
       "tags": [
         {
           "id": 1,
-          "name": "muy juguetón"
+          "name": "muy jugueton"
         }
       ],
       "status": "sold"

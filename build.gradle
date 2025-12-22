@@ -31,8 +31,6 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.9.3"
     testImplementation "org.junit.jupiter:junit-jupiter-engine:5.9.3"
     testImplementation "org.junit.vintage:junit-vintage-engine:5.9.3"
-
-    // *** AÑADE ESTA LÍNEA DE VUELTA ***
     testImplementation "net.masterthought:cucumber-reporting:5.7.0"
 
     // Apache Commons IO (necesario para FileUtils en TestRunner)
@@ -56,7 +54,7 @@ test {
     systemProperty "karate.options", System.properties.getProperty("karate.options")
     systemProperty "karate.env", System.properties.getProperty("karate.env", "dev")
 
-    // Configurar output para Karate
+    // Configura output para Karate
     systemProperty "karate.output.dir", "${buildDir}/karate-reports"
     systemProperty "karate.output.html.dir", "${buildDir}/karate-reports"
 
@@ -66,7 +64,7 @@ test {
         exceptionFormat = 'full'
     }
 
-    // Ejecutar después de las pruebas
+    // Ejecuta después de las pruebas
     doLast {
         println "Pruebas ejecutadas exitosamente"
         println "Reportes disponibles en: ${buildDir}/karate-reports/"
@@ -85,7 +83,7 @@ tasks.register('generateCucumberReports') {
         def reportDir = file("${buildDir}/cucumber-html-reports")
 
         if (jsonDir.exists()) {
-            // Buscar archivos JSON
+            // Busca archivos JSON
             def jsonFiles = []
             jsonDir.eachFileRecurse { file ->
                 if (file.name.endsWith('.json')) {
@@ -159,7 +157,7 @@ tasks.register('viewAllReports') {
     }
 }
 
-// Configurar wrapper para Gradle 7.6.1
+// Configura wrapper para Gradle 7.6.1
 wrapper {
     gradleVersion = '7.6.1'
     distributionType = Wrapper.DistributionType.BIN
