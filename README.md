@@ -1,5 +1,4 @@
 ## PROYECTO: PRUEBAS AUTOMATIZADAS API PETSTORE
-## ============================================
 
 ---
 
