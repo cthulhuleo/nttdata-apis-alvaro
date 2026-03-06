@@ -1,0 +1,8 @@
+id,expected_status,description,category,name,newName,newStatus,searchStatus
+10001,200,Mascota válida - Perro,Perros,Max,Actualizado,sold,available
+10002,200,Mascota válida - Gato,Gatos,Luna,Modificado,available,pending
+10003,200,Mascota válida - Ave,Aves,Piolin,Nuevo,pending,sold
+-99999,404,ID negativo,,,,,,
+0,404,ID cero,,,,,,
+999999999,404,ID no existente,,,,,,
+-1,404,ID negativo pequeño,,,,,,

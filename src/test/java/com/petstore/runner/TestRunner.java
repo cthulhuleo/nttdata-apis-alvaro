@@ -2,13 +2,10 @@ package com.petstore.runner;
 
 import com.intuit.karate.Results;
 import com.intuit.karate.Runner;
-import com.intuit.karate.junit5.Karate;
 import net.masterthought.cucumber.Configuration;
 import net.masterthought.cucumber.ReportBuilder;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -16,67 +13,80 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TestRunner {
 
-    @BeforeAll
-    static void setup() {
-        System.setProperty("karate.env", "dev");
+    private static final String KARATE_OUTPUT_DIR = "build/karate-reports";
+    private static final String CUCUMBER_REPORTS_DIR = "build/cucumber-reports";
+
+    @Test
+    void testAllFeatures() {
+        Results results = Runner.path("classpath:features")
+                .outputCucumberJson(true)
+                .karateEnv("dev")
+                .parallel(5); // Aumentar paralelismo
+
+        generateCucumberReport();
+        assertEquals(0, results.getFailCount(), "Pruebas fallaron: " + results.getErrorMessages());
     }
 
     @Test
-    void testParallel() {
-        Results results = Runner.path("classpath:features")
+    void testCRUDOnly() {
+        Results results = Runner.path("classpath:features/petTests.feature")
+                .tags("@crud")
                 .outputCucumberJson(true)
-                .tags("~@ignore")
+                .karateEnv("dev")
+                .parallel(3);
+
+        generateCucumberReport();
+        assertEquals(0, results.getFailCount(), "Pruebas CRUD fallaron: " + results.getErrorMessages());
+    }
+
+    @Test
+    void testNegativeOnly() {
+        Results results = Runner.path("classpath:features/petTests.feature")
+                .tags("@negative")
+                .outputCucumberJson(true)
+                .karateEnv("dev")
                 .parallel(1);
 
-        generateReport(results.getReportDir());
-        assertEquals(0, results.getFailCount(), results.getErrorMessages());
+        generateCucumberReport();
+        assertEquals(0, results.getFailCount(), "Pruebas negativas fallaron: " + results.getErrorMessages());
     }
 
-    @Karate.Test
-    Karate testAll() {
-        return Karate.run("classpath:features").relativeTo(getClass());
-    }
+    private void generateCucumberReport() {
+        try {
+            Collection<File> jsonFiles = FileUtils.listFiles(
+                    new File(KARATE_OUTPUT_DIR),
+                    new String[]{"json"},
+                    true
+            );
 
-    @Karate.Test
-    Karate testPetCRUD() {
-        return Karate.run("classpath:features/petTests.feature")
-                .tags("@crud")
-                .relativeTo(getClass());
-    }
+            List<String> jsonPaths = new ArrayList<>();
+            jsonFiles.forEach(file -> jsonPaths.add(file.getAbsolutePath()));
 
-    @Karate.Test
-    Karate testNegative() {
-        return Karate.run("classpath:features/petTests.feature")
-                .tags("@negative")
-                .relativeTo(getClass());
-    }
+            if (!jsonPaths.isEmpty()) {
+                Configuration config = new Configuration(
+                        new File(CUCUMBER_REPORTS_DIR),
+                        "PetStore API Tests"
+                );
 
-    private static void generateReport(String karateOutputPath) {
-        Collection<File> jsonFiles = FileUtils.listFiles(
-                new File(karateOutputPath),
-                new String[]{"json"},
-                true
-        );
+                config.setBuildNumber("1.0");
+                config.addClassifications("Environment", "Dev");
+                config.addClassifications("Browser", "API");
+                config.addClassifications("Branch", "main");
+                config.addClassifications("JDK", System.getProperty("java.version"));
 
-        List<String> jsonPaths = new ArrayList<>(jsonFiles.size());
-        for (File file : jsonFiles) {
-            jsonPaths.add(file.getAbsolutePath());
+                ReportBuilder reportBuilder = new ReportBuilder(jsonPaths, config);
+                reportBuilder.generateReports();
+
+                System.out.println("Reportes Cucumber generados en: " + CUCUMBER_REPORTS_DIR);
+            } else {
+                System.out.println("No se encontraron archivos JSON para generar reportes");
+            }
+        } catch (Exception e) {
+            System.err.println("Error generando reportes Cucumber: " + e.getMessage());
         }
-
-        Configuration config = new Configuration(
-                new File("build/cucumber-reports"),
-                "PetStore API Tests"
-        );
-
-        config.addClassifications("Platform", System.getProperty("os.name"));
-        config.addClassifications("Java Version", System.getProperty("java.version"));
-        config.addClassifications("Gradle Version", "7.6.1");
-        config.addClassifications("Karate Version", "1.4.1");
-
-        ReportBuilder reportBuilder = new ReportBuilder(jsonPaths, config);
-        reportBuilder.generateReports();
     }
 }

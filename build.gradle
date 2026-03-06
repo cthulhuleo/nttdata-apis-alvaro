@@ -1,13 +1,3 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        // Esta dependencia es para que el SCRIPT de Gradle (no del proyecto) pueda usar las clases de cucumber-reporting
-        classpath "net.masterthought:cucumber-reporting:5.7.0"
-    }
-}
-
 plugins {
     id 'java'
 }
@@ -15,29 +5,29 @@ plugins {
 group = 'com.petstore'
 version = '1.0.0'
 
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
+sourceCompatibility = 11
+targetCompatibility = 11
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    // Karate Core
-    testImplementation "com.intuit.karate:karate-junit5:1.4.1"
-    testImplementation "com.intuit.karate:karate-apache:0.9.6"
+    // Karate
+    testImplementation 'com.intuit.karate:karate-junit5:1.4.1'
 
-    // Test Dependencies
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.9.3"
-    testImplementation "org.junit.jupiter:junit-jupiter-engine:5.9.3"
-    testImplementation "org.junit.vintage:junit-vintage-engine:5.9.3"
-    testImplementation "net.masterthought:cucumber-reporting:5.7.0"
+    // JUnit
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
 
-    // Apache Commons IO (necesario para FileUtils en TestRunner)
-    testImplementation "commons-io:commons-io:2.11.0"
+    // Reporting
+    testImplementation 'net.masterthought:cucumber-reporting:5.7.0'
+
+    // Utilities
+    testImplementation 'commons-io:commons-io:2.11.0'
 
     // Logging
-    testImplementation "ch.qos.logback:logback-classic:1.2.11"
+    testImplementation 'ch.qos.logback:logback-classic:1.2.11'
 }
 
 sourceSets {
@@ -53,120 +43,43 @@ test {
     useJUnitPlatform()
     systemProperty "karate.options", System.properties.getProperty("karate.options")
     systemProperty "karate.env", System.properties.getProperty("karate.env", "dev")
-
-    // Configura output para Karate
     systemProperty "karate.output.dir", "${buildDir}/karate-reports"
     systemProperty "karate.output.html.dir", "${buildDir}/karate-reports"
+    systemProperty "karate.iterations", "10"
 
     testLogging {
         events "passed", "skipped", "failed"
         showStandardStreams = true
         exceptionFormat = 'full'
+        showExceptions = true
+        showCauses = true
     }
 
-    // Ejecuta después de las pruebas
-    doLast {
-        println "Pruebas ejecutadas exitosamente"
-        println "Reportes disponibles en: ${buildDir}/karate-reports/"
-    }
+    maxParallelForks = 1  // Reducir para debugging
+
+    minHeapSize = "512m"
+    maxHeapSize = "1024m"
 }
 
-// Tarea para generar reportes Cucumber
-tasks.register('generateCucumberReports') {
+task generateCucumberReports {
     description = 'Genera reportes Cucumber HTML'
     group = 'reporting'
 
     dependsOn test
 
     doLast {
-        def jsonDir = file("${buildDir}/karate-reports")
-        def reportDir = file("${buildDir}/cucumber-html-reports")
-
-        if (jsonDir.exists()) {
-            // Busca archivos JSON
-            def jsonFiles = []
-            jsonDir.eachFileRecurse { file ->
-                if (file.name.endsWith('.json')) {
-                    jsonFiles.add(file.absolutePath)
-                }
-            }
-
-            if (!jsonFiles.isEmpty()) {
-                reportDir.mkdirs()
-
-                // Configuración para reportes
-                def config = new net.masterthought.cucumber.Configuration(reportDir, "PetStore API Tests")
-                config.addClassifications("Platform", System.getProperty("os.name"))
-                config.addClassifications("Java", System.getProperty("java.version"))
-                config.addClassifications("Gradle", "7.6.1")
-                config.addClassifications("Karate", "1.4.1")
-                config.addClassifications("Suite", "API Tests")
-
-                // Generar reportes
-                def reportBuilder = new net.masterthought.cucumber.ReportBuilder(jsonFiles, config)
-                reportBuilder.generateReports()
-
-                println "Reportes Cucumber generados en: ${reportDir}/cucumber-html-reports/overview-features.html"
-            } else {
-                println "No se encontraron archivos JSON en: ${jsonDir}"
-            }
-        } else {
-            println "Directorio de Karate reports no encontrado: ${jsonDir}"
-        }
+        println " Generando reportes..."
     }
 }
 
-// Tarea para abrir reportes
-tasks.register('openKarateReport', Exec) {
-    description = 'Abre reportes Karate en navegador'
-    group = 'reporting'
-
-    dependsOn test
-
-    commandLine 'cmd', '/c', "start ${buildDir}/karate-reports/karate-summary.html"
-}
-
-tasks.register('openCucumberReport', Exec) {
-    description = 'Abre reportes Cucumber en navegador'
-    group = 'reporting'
-
-    dependsOn generateCucumberReports
-
-    commandLine 'cmd', '/c', "start ${buildDir}/cucumber-html-reports/cucumber-html-reports/overview-features.html"
-}
-
-tasks.register('viewAllReports') {
-    description = 'Muestra ubicación de todos los reportes'
-    group = 'reporting'
-
-    dependsOn test, generateCucumberReports
-
-    doLast {
-        println "========================================="
-        println "REPORTES GENERADOS:"
-        println "========================================="
-        println "1. Reportes Karate (HTML):"
-        println "   file:///${buildDir}/karate-reports/karate-summary.html"
-        println ""
-        println "2. Reportes Cucumber (HTML):"
-        println "   file:///${buildDir}/cucumber-html-reports/cucumber-html-reports/overview-features.html"
-        println ""
-        println "3. Reportes JUnit:"
-        println "   file:///${buildDir}/reports/tests/test/index.html"
-        println "========================================="
-    }
-}
-
-// Configura wrapper para Gradle 7.6.1
-wrapper {
-    gradleVersion = '7.6.1'
-    distributionType = Wrapper.DistributionType.BIN
-}
-
-// Tarea completa para ejecutar todo
 task fullTest {
     description = 'Ejecuta pruebas y genera todos los reportes'
     group = 'verification'
 
-    dependsOn clean, test, generateCucumberReports, viewAllReports
+    dependsOn clean, test, generateCucumberReports
+}
+
+wrapper {
+    gradleVersion = '7.6.1'
+    distributionType = Wrapper.DistributionType.BIN
 }

@@ -1,0 +1,58 @@
+{
+  "validPets": [
+    {
+      "id": 10001,
+      "category": {
+        "id": 1,
+        "name": "Perros"
+      },
+      "name": "Max",
+      "photoUrls": [
+        "https://example.com/dog1.jpg"
+      ],
+      "tags": [
+        {
+          "id": 1,
+          "name": "jugueton"
+        }
+      ],
+      "status": "available"
+    },
+    {
+      "id": 10002,
+      "category": {
+        "id": 2,
+        "name": "Gatos"
+      },
+      "name": "Luna",
+      "photoUrls": [
+        "https://example.com/cat1.jpg"
+      ],
+      "tags": [
+        {
+          "id": 2,
+          "name": "tranquilo"
+        }
+      ],
+      "status": "pending"
+    },
+    {
+      "id": 10003,
+      "category": {
+        "id": 3,
+        "name": "Aves"
+      },
+      "name": "Piolin",
+      "photoUrls": [
+        "https://example.com/bird1.jpg"
+      ],
+      "tags": [
+        {
+          "id": 3,
+          "name": "cantarin"
+        }
+      ],
+      "status": "sold"
+    }
+  ]
+}
